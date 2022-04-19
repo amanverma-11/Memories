@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { GoogleLogin } from "react-google-login";
 import {
   Avatar,
   Button,
@@ -7,12 +8,17 @@ import {
   Typography,
   Container,
 } from "@material-ui/core";
+import { useDispatch } from "react-redux";
+import {useNavigate}  from "react-router-dom";
 import Input from "./Input";
+import Icon from "./icon";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import useStyles from "./styles";
 
 const Auth = () => {
   const classes = useStyles();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setisSignUp] = useState(false);
 
@@ -21,16 +27,31 @@ const Auth = () => {
   const handleSubmit = () => {};
   const handleChange = () => {};
   const switchMode = () => {
-    setisSignUp((previsSignUp) => !previsSignUp); 
+    setisSignUp((previsSignUp) => !previsSignUp);
     handleShowPassword(false);
   };
+  const googleSuccess = async (res) =>{
+    const  result = res?.profileObj; //optional chaining
+    const token = res?.tokenId
+    try {
+      dispatch({type:'AUTH', data:{result,token}})
+      navigate('/');
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  const googleFailure = () =>{
+    console.log('Google Sign In was unsuccessful')
+  }
   return (
     <Container component="main" maxWidth="xs">
       <Paper className={classes.paper} elevation={3}>
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography variant="h5">{isSignUp ? "Sign Up" : "Sign In"}</Typography>
+        <Typography component="h1" variant="h5">
+          {isSignUp ? "Sign Up" : "Sign In"}
+        </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             {isSignUp && (
@@ -81,6 +102,23 @@ const Auth = () => {
           >
             {isSignUp ? "Sign Up" : "Sign In"}
           </Button>
+          <GoogleLogin
+            clientId="888880159706-9c8hd744oqbcupca3gjb6iqi6j2g2s97.apps.googleusercontent.com"
+            render={(renderProps) => (
+              <Button
+                className={classes.googleButton}
+                color="primary"
+                fullWidth
+                onClick={renderProps.onClick}
+                disabled={renderProps.disabled}
+                startIcon={<Icon />}
+                variant="contained"
+              >Google Sign In</Button>
+            )}
+            onSuccess={googleSuccess}
+            onFailure={googleFailure}
+            cookiePolicy="single_host_origin"
+          />
           <Grid container justifyContent="flex-end">
             <Grid item>
               <Button onClick={switchMode}>
